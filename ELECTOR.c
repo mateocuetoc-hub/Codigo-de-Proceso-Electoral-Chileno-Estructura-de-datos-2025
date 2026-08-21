@@ -1,4 +1,4 @@
-/* Proyecto electoral compatible con Turbo C y ANSI C90. */
+/* Compatible con Turbo C y ANSI C90. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,14 +7,12 @@
 #define IDX_SIN_VOTO   -1
 #define MIN_FIRMAS_APOYO 32767L
 
-/* Opcional: codigos de ronda/estado si los quieres como int */
 #define RONDA_PRIMERA   1
 #define RONDA_SEGUNDA   2
 #define ELEC_ABIERTA    1
 #define ELEC_CERRADA    2
 #define ELEC_PROCLAMADA 3
 
-/* ====== Forward declarations (porque hay punteros cruzados) ====== */
 struct Candidato;
 struct DVotante;
 struct NodoMesa;
@@ -24,7 +22,6 @@ struct Servel;
 struct Tricel;
 struct SistemaElectoral;
 
-/* ====== Persona ====== */
 struct Persona {
     char *rut;
     char *nombre;
@@ -32,96 +29,85 @@ struct Persona {
     int  edad;
 };
 
-/* ====== Candidato (pool estatico del Servel) ====== */
 struct Candidato {
     struct Persona *datos;
     char *partido;
-    char *tipo;     /* "Partido" o "Independiente" */
+    char *tipo;
     long firmasApoyo;
-    int  esValido;     /* 1 si aprobado por Servel  0 Si no es aprobado*/
-    int  id;           /* indice dentro del pool */
+    int  esValido;
+    int  id;
 };
 
-/* ====== Votante (lista DOBLEMENTE enlazada por mesa) ====== */
 struct DVotante {
     struct Persona *datos;
-    int  habilitado;       /* 1 puede votar */
-    int  haVotado;         /* 1 ya voto */
-    int  idxCandVoto;      /* 0..nCands-1 dentro de la ELECCION, o IDX_SIN_VOTO */
+    int  habilitado;
+    int  haVotado;
+    int  idxCandVoto;
     struct DVotante *ant;
     struct DVotante *sig;
 };
 
-/* ====== Mesa (nodo del ABB de una eleccion) ====== */
 struct NodoMesa {
     int  idMesa;
     char *comuna;
     char *direccion;
 
-    int  votosCandidatos[MAX_CANDIDATOS]; /* usa 0..(nCands-1) de la eleccion */
+    int  votosCandidatos[MAX_CANDIDATOS];
     int  totalVotosEmitidos;
     int  votosBlancos;
     int  votosNulos;
 
-    struct DVotante *headV;  /* lista doble: cabeza */
-    struct DVotante *tailV;  /* lista doble: cola   */
+    struct DVotante *headV;
+    struct DVotante *tailV;
 
-    struct NodoMesa *izq;    /* ABB por idMesa */
+    struct NodoMesa *izq;
     struct NodoMesa *der;
 };
 
-/* ====== Eleccion (nodo de LISTA SIMPLE en Servel) ====== */
 struct Eleccion {
     int  id;
-    int  ronda;    /* RONDA_PRIMERA / RONDA_SEGUNDA */
-    int  estado;   /* ELEC_ABIERTA / ELEC_CERRADA / ELEC_PROCLAMADA */
-    struct Candidato *cands[MAX_CANDIDATOS]; /* arreglo compacto de punteros */
-    int   nCands;                             /* tamano efectivo del arreglo */
-    struct NodoMesa *arbolMesas;              /* ABB propio de esta eleccion */
+    int  ronda;
+    int  estado;
+    struct Candidato *cands[MAX_CANDIDATOS];
+    int   nCands;
+    struct NodoMesa *arbolMesas;
     struct Resultado * candidato_En_Resultado;
-    struct Eleccion *sig;                     /* siguiente eleccion (historial) */
+    struct Eleccion *sig;
 };
 
-/* ====== Resultado (nodo de LISTA CIRCULAR en Tricel) ====== */
 struct Resultado {
-    struct Candidato *ganador;    /* puntero a uno de eleccion->cands[idxGanador] */
+    struct Candidato *ganador;
     int   totalMesas;
     int   totalVotantesRegistrados;
     int   totalVotantesVotaron;
     int   votosValidos;
     int   votosBlancos;
     int   votosNulos;
-    float porcentajeParticipacion;               /* 0..100 */
-    float porcentajeCandidato[MAX_CANDIDATOS];   /* solo 0..(nCands-1) */
-    int   idxGanador;                            /* indice dentro del arreglo compacto */
+    float porcentajeParticipacion;
+    float porcentajeCandidato[MAX_CANDIDATOS];
+    int   idxGanador;
     float porcentajeGanador;
-    struct Resultado *sig;   /* anillo: lista circular simplemente enlazada */
+    struct Resultado *sig;
 };
 
-/* ====== Servel: pool de candidatos + LISTA de elecciones ====== */
 struct Servel {
-    struct Candidato *candidatos[MAX_CANDIDATOS]; /* pool estatico */
+    struct Candidato *candidatos[MAX_CANDIDATOS];
     int   totalCandidatos;
-    struct Eleccion *elecciones;                 /* cabeza de la lista simple */
-    int   totalVotantesRegistrados;              /* opcional global */
+    struct Eleccion *elecciones;
+    int   totalVotantesRegistrados;
 };
 
-/* ====== Tricel: LISTA CIRCULAR de resultados ====== */
 struct Tricel {
-    struct Resultado *headResultados;  /* NULL si vacio; si 1 nodo: head->sig == head */
+    struct Resultado *headResultados;
     int   totalResultados;
 };
 
-/* ====== Sistema (punteros a modulos en heap) ====== */
 struct SistemaElectoral {
     struct Servel *servel;
     struct Tricel *tricel;
 };
 
-/* ==== PROTOTIPOS de funciones usadas antes ==== */
 int validarDatosCanditado(struct Candidato *candidato);
-
-/* ================= FUNCIONES GENERALES ================= */
 
 int verificar_Eleccion_contiene_Candidato(struct Eleccion *eleccion, int idCand)
 {
@@ -164,11 +150,9 @@ void limpiarBuffer(void)
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
     {
-        /* limpiar */
+
     }
 }
-
-/* ================= DATOS DE EJEMPLO ================= */
 
 void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
 {
@@ -202,7 +186,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
     servel->elecciones = NULL;
     servel->totalVotantesRegistrados = 0;
 
-    /* ---- Candidato 1 ---- */
     c1 = (struct Candidato *) malloc(sizeof(struct Candidato));
     p1 = (struct Persona  *) malloc(sizeof(struct Persona));
 
@@ -232,7 +215,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
     servel->candidatos[servel->totalCandidatos] = c1;
     servel->totalCandidatos++;
 
-    /* ---- Candidato 2 ---- */
     c2 = (struct Candidato *) malloc(sizeof(struct Candidato));
     p2 = (struct Persona  *) malloc(sizeof(struct Persona));
 
@@ -262,8 +244,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
     servel->candidatos[servel->totalCandidatos] = c2;
     servel->totalCandidatos++;
 
-    /* ===================== ELECCION DE EJEMPLO ===================== */
-
     e1 = (struct Eleccion *) malloc(sizeof(struct Eleccion));
     if (e1 == NULL) {
         printf("Error de memoria creando eleccion.\n");
@@ -288,8 +268,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
 
     e1->sig = servel->elecciones;
     servel->elecciones = e1;
-
-    /* ===================== MESA DE EJEMPLO ===================== */
 
     m1 = (struct NodoMesa *) malloc(sizeof(struct NodoMesa));
     if (m1 == NULL) {
@@ -317,8 +295,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
     m1->der                = NULL;
 
     e1->arbolMesas = m1;
-
-    /* ===================== RESULTADO EJEMPLO ===================== */
 
     tricel->headResultados = NULL;
     tricel->totalResultados = 0;
@@ -359,14 +335,11 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
     printf(" - 1 mesa (ID=%d) en esa eleccion\n", m1->idMesa);
     printf(" - 1 resultado en Tricel (ganador ID=%d)\n", r1->ganador->id);
 
-    /* ===================== VOTANTES EJEMPLO ===================== */
-
     v1 = NULL;
     v2 = NULL;
     p1v = NULL;
     p2v = NULL;
 
-    /* --- Votante 1 --- */
     v1 = (struct DVotante *) malloc(sizeof(struct DVotante));
     p1v = (struct Persona  *) malloc(sizeof(struct Persona));
 
@@ -409,7 +382,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
         }
     }
 
-    /* --- Votante 2 --- */
     v2 = (struct DVotante *) malloc(sizeof(struct DVotante));
     p2v = (struct Persona  *) malloc(sizeof(struct Persona));
 
@@ -454,8 +426,6 @@ void inicializarSistemaConDatos(struct SistemaElectoral *sistema)
 
     printf("Se agregaron votantes de ejemplo a la mesa %d.\n", m1->idMesa);
 }
-
-/* ================= FUNCIONES SERVEL ================= */
 
 int validarDatosCanditado(struct Candidato *candidato)
 {
@@ -804,8 +774,6 @@ void CambiarEstadoDeEleccion(struct Servel * servel)
     }
 }
 
-/* ================= MENU SERVEL ================= */
-
 void menuServel(struct Servel *servel)
 {
     int indice;
@@ -1120,8 +1088,6 @@ void menuServel(struct Servel *servel)
         }
     } while (indice != 0);
 }
-
-/* ============== FUNCIONES TRICEL / RESULTADOS ============== */
 
 void ContarMesas(struct NodoMesa *mesas, int *contador){
     if (mesas != NULL){
@@ -1528,8 +1494,6 @@ void listarResultado (struct Tricel *tricel, struct Servel *servel)
     printf("resultados listados\n\n");
 }
 
-/* ================= MENU TRICEL ================= */
-
 void MenuTricel( struct Tricel *tricel, struct SistemaElectoral *sistema)
 {
     int indice;
@@ -1614,8 +1578,6 @@ void MenuTricel( struct Tricel *tricel, struct SistemaElectoral *sistema)
 
     }while (indice != 0);
 }
-
-/* ================= FUNCIONES VOTANTES ================= */
 
 struct NodoMesa * buscarLaMesaConId(struct NodoMesa * raiz , int idBuscado)
 {
@@ -1895,8 +1857,6 @@ void ListarVotantesDeMesa(struct Servel *servel)
     }
 }
 
-/* ================= MENU VOTANTES ================= */
-
 void menuVotante(struct Servel *servel)
 {
     int opcion;
@@ -1942,8 +1902,6 @@ void menuVotante(struct Servel *servel)
 
     } while (opcion != 0);
 }
-
-/* ============== FUNCIONES PARA REPORTES ============== */
 
 void mostrarResultadosParaVotantes(struct Resultado *resultados,
                                    struct Eleccion *eleccion)
@@ -2066,8 +2024,6 @@ void mostrarReportePorcentaje(struct Resultado *resultados,
     }
 }
 
-/* ============== MENU REPORTES ============== */
-
 void MenuReportes(struct SistemaElectoral *sistema)
 {
     int indice;
@@ -2142,8 +2098,6 @@ void MenuReportes(struct SistemaElectoral *sistema)
 
     } while (indice != 0);
 }
-
-/* ================= MAIN ================= */
 
 int main(void)
 {
